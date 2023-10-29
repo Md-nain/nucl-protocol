@@ -475,6 +475,10 @@
 import Header from '@/components/Header.vue';
 import CoinDropdown from '@/components/CoinDropdown.vue';
 import AccountDropdown from '@/components/AccountDropdown.vue';
+import ethIcon from '@/static/images/icons/eth-icon.svg'
+import bnbIcon from '@/static/images/icons/bnb-icon.svg'
+import crvIcon from '@/static/images/icons/crv-icon.svg'
+import daiIcon from '@/static/images/icons/dai-icon.svg'
 export default {
   components: {
     Header,
@@ -488,16 +492,16 @@ export default {
       
 
       withdrawcoins: [
-        { id: 1, name: 'ETH', image: 'src/static/images/icons/eth-icon.svg' },
-        { id: 2, name: 'BNB', image: 'src/static/images/icons/bnb-icon.svg' },
+        { id: 1, name: 'ETH', image: ethIcon },
+        { id: 2, name: 'BNB', image: bnbIcon },
         // Add more coin options as needed for the dropdown
       ],
-      selectedWithdrawCoin: { id: 1, name: 'ETH', image: 'src/static/images/icons/eth-icon.svg' },
+      selectedWithdrawCoin: { id: 1, name: 'ETH', image: ethIcon },
       depostcoins: [
-        { id: 1, name: 'CRV', image: 'src/static/images/icons/crv-icon.svg' },
-        { id: 2, name: 'DAI', image: 'src/static/images/icons/dai-icon.svg' },
+        { id: 1, name: 'CRV', image: crvIcon },
+        { id: 2, name: 'DAI', image: daiIcon },
       ],
-      selectedDepositCoin: { id: 1, name: 'CRV', image: 'src/static/images/icons/crv-icon.svg' },
+      selectedDepositCoin: { id: 1, name: 'CRV', image: crvIcon },
 
       accountList: [
         { id: 1, name: 'Smart Wallet', number: '0xf373...195e' },
