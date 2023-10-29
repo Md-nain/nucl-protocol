@@ -26,9 +26,9 @@
                         </div>
                         <ul class="navbar-nav me-auto">
                             <li class="nav-item external-btn">
-                                <a href="/staking" class="nav-link">
+                                <router-link to="/staking" class="nav-link">
                                     Staking <img src="@/static/images/icons/external-btn-icon.svg" alt="icon">
-                                </a>
+                                </router-link>
                             </li>
                             <li class="nav-item external-btn">
                                 <a href="javascript:void(0);" class="nav-link" target="_blank">
