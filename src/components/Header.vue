@@ -1,5 +1,5 @@
 <template>
-    <header id="main-header" :class="['header', { 'fixed-header': fixedHeader }]">
+    <header id="main-header" class="header">
         <div class="header-main-content d-flex justify-content-between align-items-center flex-wrap">
             <div class="page-title">
                 <span>{{ pageTitle }}</span>
@@ -181,7 +181,6 @@
     props: ['pageTitle'],
     data() {
       return {
-        fixedHeader: false,
         isNavbarOpen: false,
         showLoader: false,
         initializationText: '',
@@ -191,12 +190,8 @@
       };
     },
     mounted() {
-      window.addEventListener('scroll', this.setFixedHeader);
     },
     methods: {
-      setFixedHeader() {
-        this.fixedHeader = window.pageYOffset > 10;
-      },
       toggleNavbar() {
         this.isNavbarOpen = !this.isNavbarOpen;
       },
