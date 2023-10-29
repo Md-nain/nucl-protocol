@@ -336,7 +336,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)" @click="showDepositScreen">Deposit</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
@@ -355,7 +355,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)" @click="showDepositScreen">Deposit</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
@@ -374,7 +374,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)" @click="showDepositScreen">Deposit</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
@@ -616,7 +616,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)" @click="showWithdrawAmountScreen">Withdraw</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
@@ -635,7 +635,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)"  @click="showWithdrawAmountScreen">Withdraw</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
@@ -654,7 +654,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)" @click="showWithdrawAmountScreen">Withdraw</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
@@ -673,7 +673,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)" @click="showWithdrawAmountScreen">Withdraw</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
@@ -692,7 +692,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)" @click="showWithdrawAmountScreen">Withdraw</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
@@ -711,7 +711,7 @@
                           </div>
                         </div>
                         <div class="cta">
-                          <a href="javascript:void(0)">Deposit</a>
+                          <a href="javascript:void(0)" @click="showWithdrawAmountScreen">Withdraw</a>
                         </div>
                       </div>
                     </div><!--Coin Box-->
