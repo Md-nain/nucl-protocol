@@ -75,13 +75,14 @@
                                 </router-link>
                             </li>
                             <li>
-                                <router-link to="/stETHETHRecursiveStakingpage2">
+                                <router-link to="/additionalModals">
                                     <div class="icon">
                                         <img src="@/static/images/icons/sub-nav-icon.svg" alt="icon">
                                     </div>
-                                    <span>Leveraged stETH-ETH Arbitrage</span>
+                                    <span>Additional Modals</span>
                                 </router-link>
                             </li>
+                            <!-- 
                             <li>
                                 <router-link to="/stETHETHRecursiveStakingpage3">
                                     <div class="icon">
@@ -89,7 +90,7 @@
                                     </div>
                                     <span>Leveraged stETH-ETH Arbitrage</span>
                                 </router-link>
-                            </li>
+                            </li> -->
                         </ul>
                     </div>
                 </div>
@@ -108,10 +109,18 @@ export default {
         };
     },
     mounted() {},
+    watch: {
+        // Watch for route changes and close the submenu
+        $route(to, from) {
+            if (to.path !== from.path) {
+                this.closeSubMenu();
+            }
+        },
+    },
     methods: {
         toggleSidebar() {
             this.isCollapsed = !this.isCollapsed;
-            const appElement = document.querySelector('html'); // You can use 'body' or an ID selector if needed
+            const appElement = document.querySelector('html');
             appElement.classList.toggle('sidebar-collapsed', this.isCollapsed);
         },
         toggleSubMenu() {
@@ -125,8 +134,7 @@ export default {
             const currentRoute = this.$route.path;
             return (
                 currentRoute === '/stETHETHRecursiveStaking' ||
-                currentRoute === '/stETHETHRecursiveStakingpage2' ||
-                currentRoute === '/staking'
+                currentRoute === '/additionalModals' // add pages links under automated submenu
             );
         },
     },

@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <Sidebar />
+  
     <main>
       <Header pageTitle="Settings" />
       <div class="main-content">
@@ -207,7 +206,7 @@
                     <div class="box-content">
                       <div class="row d-flex flex-wrap align-items-center">
                         <div class="col-12 col-sm-7">
-                          <div class="heading">
+                          <div class="heading mb-1">
                             <h6>GAS Contract Balance</h6>
                           </div>
                           <div class="coin-value d-flex align-items-center">
@@ -247,7 +246,7 @@
                                       <!-- Amount Coin Field -->
                                       <div class="amount-coins-field">
                                         <div class="label-field">
-                                          <label for="">Amount to withdraw</label>
+                                          <label>Amount to withdraw</label>
                                           <div class="code">
                                             <span>Bal: <em>50.25876391</em></span>
                                           </div>
@@ -284,14 +283,14 @@
                                   <div class="modal-body">
                                       <div class="account-dropdown mb-1-half">
                                         <div class="label">
-                                          <label for="">Select account to deposit</label>
+                                          <label>Select account to deposit</label>
                                         </div>
                                         <AccountDropdown :accounts="accountList" :selectedAccount="selectedAccount" @update:selected-account="updateSelectedAccount" />
                                       </div>
                                       <!-- Amount Coin Field -->
                                       <div class="amount-coins-field">
                                         <div class="label-field">
-                                          <label for="">Amount to </label>
+                                          <label>Amount to </label>
                                           <div class="code">
                                             <span>Bal: <em>50.25876391</em></span>
                                           </div>
@@ -314,7 +313,7 @@
                                   </div>
                               </div>
                           </div>
-                        </div><!-- Withdraw Modal --> 
+                        </div><!-- Deposit Modal --> 
 
 
                       </div>
@@ -375,7 +374,8 @@
                         </table>
                       </div>
                     </div>
-                  </div>
+                  </div><!-- Box -->
+
                 </div>
               </div>
               <!-- Tab Pane -->
@@ -397,23 +397,24 @@
                   </div><!-- notifiction Box-->
 
                   <!-- Box -->
-                  <div class="nucl-content-box transactions-table-box">
+                  <div class="nucl-content-box">
                     <div class="box-content">
-                      <div class="icon-title d-flex align-items-center">
+                      <div class="icon-title d-flex align-items-center pb-1-half text-dark">
                         <div class="icon">
                           <img src="@/static/images/icons/envelop-icon.svg" alt="icon">
                         </div>
                         <h6>Your Email</h6>
                       </div>
                       <div class="col-sm-6">
-                        <div class="field-cta-row d-flex align-items-center">
+                        <div class="field-cta-row d-flex align-items-center pt-1-half">
                           <div class="input-field">
                             <input type="email" placeholder="Enter">
                           </div>
-                          <div class="btn-cn">
+                          <div class="btn-content">
                             <button class="btn medium-btn">Sign In</button>
                           </div>
                         </div>
+                        
                       </div>
                     </div>
                   </div><!--box-->
@@ -445,10 +446,11 @@
                       </div>
                       <div class="col-sm-6">
                         <div class="field-cta-row d-flex align-items-center pt-1-half">
-                          <div class="input-field">
+                          <div class="input-field has-unit position-relative">
                             <input type="email" placeholder="Enter">
+                            <div class="unit"><span>Day(s)</span></div>
                           </div>
-                          <div class="btn-cn">
+                          <div class="btn-content">
                             <button class="btn medium-btn">Update</button>
                           </div>
                         </div>
@@ -466,18 +468,15 @@
       </div>
     </main>
     
-  </div>
 </template>
 
 
 <script>
-import Sidebar from '@/components/Sidebar.vue';
 import Header from '@/components/Header.vue';
 import CoinDropdown from '@/components/CoinDropdown.vue';
 import AccountDropdown from '@/components/AccountDropdown.vue';
 export default {
   components: {
-    Sidebar,
     Header,
     CoinDropdown,
     AccountDropdown,
@@ -491,7 +490,7 @@ export default {
       withdrawcoins: [
         { id: 1, name: 'ETH', image: 'src/static/images/icons/eth-icon.svg' },
         { id: 2, name: 'BNB', image: 'src/static/images/icons/bnb-icon.svg' },
-        // Add more coin options as needed for the first dropdown
+        // Add more coin options as needed for the dropdown
       ],
       selectedWithdrawCoin: { id: 1, name: 'ETH', image: 'src/static/images/icons/eth-icon.svg' },
       depostcoins: [
@@ -500,7 +499,7 @@ export default {
       ],
       selectedDepositCoin: { id: 1, name: 'CRV', image: 'src/static/images/icons/crv-icon.svg' },
 
-      accountList: [ // Dummy account list
+      accountList: [
         { id: 1, name: 'Smart Wallet', number: '0xf373...195e' },
         { id: 2, name: 'Metamask wallet', number: '0x0000...8888' },
         // Add more accounts as needed
@@ -585,7 +584,7 @@ html{
 }
 .tab-content{
   .pane-content{
-    padding: 0.1rem 0;
+    padding-bottom: 0.1rem ;
   }
   .wallet-fields-list{
     .input-field{
@@ -734,6 +733,16 @@ html{
     padding-top: 0.2rem;
     .input-field{
       padding-right: 0.2rem;
+      &.has-unit{
+       input{
+        padding-right: 0.7rem;
+       }
+        .unit{
+          position: absolute;
+          right: 0.4rem;
+          top: 0.12rem;
+        }
+      }
     }
     input{
       min-width: 3rem;
@@ -742,17 +751,8 @@ html{
   }
 }
 .note.error{
-  color: var(--red-color);
+  color: var(--orange-color);
   padding-top: 0.05rem;
-}
-.bordered-note-box{
-  font-size: 0.12rem;
-  .content{
-    padding: 0.08rem 0.12rem;
-    border: 0.02rem solid var(--blue-color);
-    border-radius: 0.1rem;
-    font-weight: 500;
-  }
 }
 
 </style>

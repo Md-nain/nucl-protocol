@@ -1,6 +1,4 @@
 <template>
-  <div>
-    <Sidebar />
     <main>
       <Header pageTitle="My Profile" />
       <div class="main-content">
@@ -776,19 +774,34 @@
             </div><!-- aside content -->
           </div><!-- profile-aside-->
         </div>
+
+
+         <!-- Bottom Right Alert -->
+         <div class="alert bottom-right-alert" v-if="showBottomRightAlert">
+            <div class="alert-content">
+              <div class="alert-header">
+                <div class="heading">
+                  <h6>Wallet Connected</h6>
+                </div>
+                <button type="button" class="btn-close" @click="hideBottomRightAlert">
+                  
+                </button>
+              </div>
+              <div class="alert-body">
+                <span>0xf37386577ede41efc7aeA90C50572C91465e195e</span>
+              </div>
+            </div>
+          </div><!-- Bottom Right Alert -->
+
       </div>
     </main>
-    
-  </div>
 </template>
 
 
 <script>
-import Sidebar from '@/components/Sidebar.vue';
 import Header from '@/components/Header.vue';
 export default {
   components: {
-    Sidebar,
     Header,
   },
   data() {
@@ -798,6 +811,7 @@ export default {
       depositAmountScreen: false,
       withdrawScreen: false,
       withdrawAmountScreen: false,
+      showBottomRightAlert: false,
     }
   },
   methods: {
@@ -822,7 +836,15 @@ export default {
     showWithdrawAmountScreen(){
       this.withdrawScreen = false;
       this.withdrawAmountScreen = true;
-    }
+    },
+    hideBottomRightAlert() {
+      this.showBottomRightAlert = false; 
+    },
+  },
+  mounted() {
+    setTimeout(() => {
+      this.showBottomRightAlert = true; // Trigger the animation
+    }, 500);
   },
 }
 </script>

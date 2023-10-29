@@ -1,6 +1,9 @@
 <template>
   <div class="page-wrapper">
+    <div>
+      <Sidebar />
       <router-view /> <!-- This is where the page-specific content will be rendered -->
+    </div>
   </div>
 </template>
 
