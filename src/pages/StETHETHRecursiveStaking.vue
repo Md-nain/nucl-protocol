@@ -657,7 +657,6 @@ import ethIcon from '@/static/images/icons/eth-icon.svg'
 import stEthIcon from '@/static/images/icons/steth-icon.svg'
 import crvIcon from '@/static/images/icons/crv-icon.svg'
 import daiIcon from '@/static/images/icons/dai-icon.svg'
-
 export default {
   components: {
     Header,
