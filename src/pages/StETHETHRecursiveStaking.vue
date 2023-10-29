@@ -653,6 +653,11 @@ import { Tooltip } from 'bootstrap';
 import { ref, onBeforeUnmount, onMounted,watch } from 'vue';
 import { G2, Line } from '@antv/g2plot';
 
+import crvIcon from '@/static/images/icons/crv-icon.svg';
+import daiIcon from '@/static/images/icons/dai-icon.svg';
+import ethIcon from '@/static/images/icons/eth-icon.svg';
+import stethIcon from '@/static/images/icons/steth-icon.svg';
+
 export default {
   components: {
     Header,
@@ -734,16 +739,16 @@ export default {
 
     const selectedTab = ref('automated-create-tab');
     const depostcoins = ref([
-      { id: 1, name: 'CRV', image: 'src/static/images/icons/crv-icon.svg' },
-      { id: 2, name: 'DAI', image: 'src/static/images/icons/dai-icon.svg' },
+    { id: 1, name: 'CRV', image: crvIcon },
+  { id: 2, name: 'DAI', image: daiIcon },
     ]);
     const selectedDepositCoin = ref(depostcoins.value[0]); // Set the initial selected coin
 
 
 
     const tokencoins = ref([
-      { id: 1, name: 'ETH', image: 'src/static/images/icons/eth-icon.svg' },
-      { id: 2, name: 'stETH', image: 'src/static/images/icons/steth-icon.svg' },
+    { id: 1, name: 'ETH', image: ethIcon },
+  { id: 2, name: 'stETH', image: stethIcon },
     ]);
     const selectedTokenCoin = ref(tokencoins.value[0]);
     const updateSelectedTokenCoin = (coin) => {
