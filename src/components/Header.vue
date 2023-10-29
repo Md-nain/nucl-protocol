@@ -37,7 +37,7 @@
                             </li>
 
                             <li class="nav-item new-item" v-if="showNewListItem">
-                                <a href="#" class="nav-link d-flex">
+                                <a href="javascript:void(0);" class="nav-link d-flex">
                                     <div class="icon">
                                         <img src="@/static/images/icons/fire-icon.svg" alt="icon">
                                     </div>
