@@ -43,14 +43,14 @@
                                     </div>
                                     <div class="text">
                                         <em>Gas Balance</em>
-                                        <span>0.11 ETH</span>
+                                        <span>{{ userBalance() }}</span>
                                     </div>
                                 </a>
                             </li>
                             <li class="nav-item new-item dropdown customized-variant-dropdown" v-if="showNewListItem">
                                 <button class="btn btn-secondary dropdown-toggle" type="button" @click="toggleDropdown" :class="{ 'show': isOpen }">
                                     <span>
-                                        0x357...28e6
+                                      {{ userAddress() }}
                                     </span>
                                 </button>
                                 <div class="dropdown-menu" v-if="isOpen" :class="{ 'show': isOpen }">
@@ -64,12 +64,12 @@
                                                 <span><img src="@/static/images/icons/dropdown-cta-plus.svg" alt="+"></span>
                                             </div>
                                         </div>
-                                        <div class="code-cta">
-                                            <div class="code">
+                                        <div class="code-cta"  >
+                                            <div class="code" >
                                                 <div class="sno">
                                                     <em>#1</em>
                                                 </div>
-                                                <span>0xf373...195e</span>
+                                                <span>{{ userAddress() }}</span>
                                             </div>
                                             <div class="icon">
                                             <img src="/src/static/images/icons/copy-icon.svg" alt="copy">
@@ -91,19 +91,19 @@
                                                 <div class="wallet-logo">
                                                     <img src="@/static/images/icons/metamask-logo.svg" alt="logo">
                                                 </div>
-                                                <span>0xf373...195e</span>
+                                                <span>{{ userAddress() }}</span>
                                             </div>
                                             <div class="icon">
-                                                <img src="/src/static/images/icons/copy-icon.svg" alt="copy">
+                                                <img src="@/static/images/icons/copy-icon.svg" alt="copy">
                                             </div>
                                             <div class="icon share-icon">
-                                            <img src="/src/static/images/icons/share-small-icon.svg" alt="share">
+                                            <img src="@/static/images/icons/share-small-icon.svg" alt="share">
                                             </div>
                                         </div>
                                     </div>
                                     <!-- btn -->
                                     <div class="btn-content">
-                                        <button class="btn white-bg-bordered-btn w-100"><img src="@/static/images/icons/disconnect-icon.svg" /> Disconnect </button>
+                                        <button class="btn white-bg-bordered-btn w-100" @click="disconnect()"><img src="@/static/images/icons/disconnect-icon.svg" /> Disconnect </button>
                                     </div>
                                 </div>
                             </li>
@@ -113,8 +113,8 @@
                                     <img src="@/static/images/icons/eth-icon.svg" alt="icon">
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="headerCoinDropdown">
-                                    <li><a class="dropdown-item" href="#"> <img src="@/static/images/icons/eth-icon.svg" alt="icon"> Ethereum</a></li>
-                                    <li><a class="dropdown-item" href="#"> <img src="@/static/images/icons/bnb-icon.svg" alt="icon"> BNB</a></li>
+                                    <li><a class="dropdown-item" href="#" @click="switchChain(ethereum)"> <img src="@/static/images/icons/eth-icon.svg" alt="icon" > Ethereum</a></li>
+                                    <li><a class="dropdown-item" href="#" @click="switchChain(bnb)"> <img src="@/static/images/icons/bnb-icon.svg" alt="icon" > BNB</a></li>
                                 </ul>
                             </li>
                             
@@ -142,7 +142,7 @@
                     <div  v-if="!showLoader" class="connected-signin-options">
                         <div class="option-item">
                             <div class="item-content">
-                                <span @click="initiateConnection('Metamask')">Metamask</span>
+                                <span @click="initConnection(metamask)">Metamask</span>
                                 <div class="icon">
                                     <img src="@/static/images/icons/metamask-logo.svg" alt="logo">
                                 </div>
@@ -150,7 +150,7 @@
                         </div>
                         <div class="option-item">
                             <div class="item-content">
-                                <span @click="initiateConnection('WalletConnect')">WalletConnect</span>
+                                <span @click="initConnection(walletconnect)">WalletConnect</span>
                                 <div class="icon">
                                     <img src="@/static/images/icons/walletconnect-logo.svg" alt="logo">
                                 </div>
@@ -176,11 +176,32 @@
   </template>
   
   <script>
+  import Web3 from 'web3'
+
+  import { watch } from 'vue'
+  import { useUserStore } from '@/store/index.js'
+  import { initWeb3Connention, metamaskSwitchNetwork } from '@/assets/js/web3.js'
+  import { filterAddress, filterDecimal } from '@/assets/js/filters.js'
+  
+  import { STATUS_NOT_LOGGED_IN, STATUS_LOGGING, STATUS_LOGGED_IN, STATUS_DISCONNECTED, WALLETCONNECT, METAMASK, ETHEREUM, BNB} from '@/assets/js/constant.js'
+  import { PROVIDER_CONFIG } from "@/assets/js/config.js"
+
+
+
+
   export default {
     name: 'Header',
     props: ['pageTitle'],
+
+
+    
     data() {
       return {
+        metamask: METAMASK,
+        walletconnect: WALLETCONNECT,
+        ethereum: ETHEREUM,
+        bnb: BNB,
+        userStore: useUserStore(),
         isNavbarOpen: false,
         showLoader: false,
         initializationText: '',
@@ -190,32 +211,222 @@
       };
     },
     mounted() {
+        this.watchLoginStatus();
+        this.getBalance()
+        
     },
+
     methods: {
-      toggleNavbar() {
-        this.isNavbarOpen = !this.isNavbarOpen;
-      },
-      closeNavbar() {
-        this.isNavbarOpen = false;
-      },
-  
-      initiateConnection(option) {
-        this.showLoader = true;
-        this.initializationText = `Initializing...`;
-        // Simulate the initialization process (you can use a timer or API calls here)
-        setTimeout(() => {
-          // Once the initialization is complete, hide the loader and show the actual content
+
+        async switchChain(option){
+            const connector = this.userStore.connector
+            switch (connector) {
+                case METAMASK:
+                    switch (option) {
+                        case ETHEREUM:
+                            await metamaskSwitchNetwork(PROVIDER_CONFIG.ethChainId, PROVIDER_CONFIG.ethRpcUrl)
+                                .then(() => {
+                                    this.userStore.setChainId(PROVIDER_CONFIG.ethChainId)
+                                })
+                                .catch((err) => {
+                                    console.error(err);
+                                });
+                            break;
+                    }
+
+                    break;
+
+                case WALLETCONNECT:
+                    break;
+            }
+            console.log(option)
+            
+        },
+
+        async watchLoginStatus() {
+
+            watch(() => this.userStore.status, (newLoginStatus) => {
+
+                switch (newLoginStatus) {
+                    case STATUS_LOGGED_IN:
+                        this.afterLogin();
+                        
+                        break
+                    default:
+                        this.isConnention();
+                }
+            }, {immediate: true});
+        },
+
+        userAddress() {
+            return filterAddress(this.userStore.address); // 或者是任何默认值
+        },
+
+        userBalance() {
+            return filterDecimal(this.userStore.balance); // 或者是任何默认值
+        },
+
+
+        afterLogin() {
+            const closeButton = document.querySelector('.modal-header .btn-close');
+            closeButton.click()
+            
+            this.isOpen = false
             this.showLoader = false;
             this.initializationText = '';
-  
+    
             this.showConnectSignIn = false;
             this.showNewListItem = true;
-        }, 2000);
-      },
+            console.log('Successfully connected to the website');
+            
+        },
 
-      toggleDropdown() {
-        this.isOpen = !this.isOpen;
-      },
+        async isConnention() {
+            
+                
+            switch (this.userStore.connector){
+                case METAMASK:
+                    this.userStore.setWeb3Provider(new Web3(window.ethereum));
+                    const provider = this.userStore.web3Provider
+                    const currentChainId = Web3.utils.toHex(await provider.eth.getChainId())
+                    try {
+                        const accounts = await provider.eth.getAccounts();
+                        if (accounts.length > 0) {
+                            this.userStore.setAddress(accounts[0])
+                            this.userStore.setChainId(currentChainId)
+                            console.log('Connected account:', accounts[0]);
+                            this.userStore.setStatus(STATUS_LOGGED_IN)
+                            window.ethereum.on('accountsChanged', (accounts) => {
+                                if (accounts.length === 0) {
+                                    this.userStore.setStatus(STATUS_DISCONNECTED)
+                                    console.log('Disconnection now.');
+                                } else {
+                                    console.log('Switched account:', accounts[0]);
+                                    this.userStore.setAddress(accounts[0])
+                                    this.userStore.setChainId(currentChainId)
+                                    this.userStore.setStatus(STATUS_LOGGED_IN)
+                                }
+                            });
+
+                            switch (currentChainId) {
+                                case PROVIDER_CONFIG.ethChainId:
+                                    this.userStore.setChainId(currentChainId)
+                                    console.log('Connected chain:', currentChainId);
+                                    break
+
+                                case PROVIDER_CONFIG.bnbChainID:
+                                    this.userStore.setChainId(currentChainId)
+                                    console.log('Connected chain:', currentChainId);
+                                    break
+
+                                default:
+                                    await this.switchChain(ETHEREUM)
+                                    break 
+                            }
+
+                            window.ethereum.on('chainChanged', async (chainId) => {
+                                
+                                switch (chainId) {
+
+                                    case PROVIDER_CONFIG.ethChainId:
+                                        this.userStore.setChainId(chainId)
+                                        console.log('Chain changed to:', chainId);
+                                        break
+
+                                    case PROVIDER_CONFIG.bnbChainID:
+                                        this.userStore.setChainId(chainId)
+                                        console.log('Chain changed to:', chainId);
+                                        break
+
+                                    default:
+                                        await this.switchChain(ETHEREUM)
+                                        break
+                                }
+                            });
+                        }
+
+                    } catch (error) {
+                        console.error('Error checking if wallet is connected:', error);
+                    }
+                    break;
+                
+                case WALLETCONNECT:
+                    break
+
+            }
+        },
+            
+        
+    
+        async initConnection(option) {
+
+            this.userStore.setStatus(STATUS_NOT_LOGGED_IN);
+            
+            this.showLoader = true
+            this.initializationText = `Initializing...`
+            // Simulate the initialization process (you can use a timer or API calls here)
+            console.log(option)
+            switch (option) {
+                case METAMASK:
+                    await initWeb3Connention(option)
+                        .then((provider) => {
+                            // 连接成功后，使用返回的web3实例来设置Web3提供者
+                            this.userStore.setConnector(METAMASK);
+                            this.userStore.setWeb3Provider(provider);
+                            // 其他成功连接后的逻辑
+                            this.userStore.setStatus(STATUS_LOGGING)
+                        })
+                        .catch((err) => {
+                            // 错误处理
+                            if (err.code === 4001) {
+                            // 用户拒绝连接
+                            console.log('Please connect to MetaMask.');
+                            } else {
+                            // 其他错误
+                            console.error(err);
+                            }
+                        });
+                        break;
+
+                case WALLETCONNECT:
+                    break;
+            }
+        
+        },
+
+        async _getBalance() {
+            const provider = this.userStore.web3Provider
+            const balance = await provider.utils.fromWei(await provider.eth.getBalance(this.userStore.address), 'ether');
+            return balance
+        },
+
+        async getBalance() {
+            watch(() => this.userStore.status, async (newStatus) => {
+                console.log(newStatus)
+                switch (newStatus) {
+                    case STATUS_LOGGED_IN:
+                        const balance = await this._getBalance();
+                        this.userStore.setBalance(balance)
+                        break
+            }
+            }, {immediate: true});
+        },
+        
+        toggleNavbar() {
+            this.isNavbarOpen = !this.isNavbarOpen;
+        },
+
+        closeNavbar() {
+            this.isNavbarOpen = false;
+        },
+
+        toggleDropdown() {
+            this.isOpen = !this.isOpen;
+        },
+
+      
+
+
   
     },
   };

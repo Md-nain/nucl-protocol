@@ -16,16 +16,13 @@
                         <div class="header-area">
                             <div class="top-content row d-flex align-items-center">
                                 <div class="col-sm-8 left-content">
-                                    <div class="data-label">
-                                        <h6>Available To Stake</h6> <div class="status-bubble"></div>
-                                    </div>
-                                    <div class="data-value">
-                                        <span>0.0087 ETH</span>
+                                    <div class="nav-item ms-auto me-0" id="claimbtn">
+                                        <a href="javascript: void(0);" class="nav-link btn-link" @click="postClaim">Claim>></a>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 right-content">
                                     <div class="title">
-                                        <h3>Lido APY <em>3.6%</em></h3>
+                                        <h3>earned <em>{{ this.earned }} ETH</em></h3>
                                     </div>
                                 </div>
                             </div>
@@ -36,7 +33,7 @@
                                     </div>
                                     <div class="data-value">
                                         <span data-bs-toggle="tooltip" data-bs-placement="top" 
-                                            title="0.0099999999999998 ETH">0.0099 stETH</span>
+                                            :title="stakedAmount">{{ this.stakedAmount }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -58,12 +55,12 @@
                                         <div class="label-field">
                                         <label>Amount to </label>
                                         <div class="code">
-                                            <span>Bal: <em>80.25876391</em></span>
+                                            <span>Bal: <em>{{ userStore.balance }}</em></span>
                                         </div>
                                         </div>
                                         <div class="field-group limit-cta amount-field simplecoin-field">
-                                        <div class="input-field field-error">
-                                            <input type="number" placeholder="Enter" >
+                                        <div class="input-field">
+                                            <input type="number" placeholder="Enter" v-model="inputStakeAmount" @blur="getStakeGasPrice">
                                             <div class="cta">
                                             <span>Max</span>
                                             </div>
@@ -71,7 +68,7 @@
                                                 <img src="@/static/images/icons/eth-icon.svg" alt="icon">
                                                 <span>ETH</span>
                                             </div>
-                                            <div class="error-msg">
+                                            <div class="error-msg" v-if="false">
                                                 <span>ETH amount is required.</span>
                                             </div>
                                         </div>
@@ -80,26 +77,10 @@
                                     <div class="data-list">
                                         <div class="list-item">
                                             <div class="name-label">
-                                                <span>You Will Receive</span>
-                                            </div>
-                                            <div class="value">
-                                                <span>80 stETH</span>
-                                            </div>
-                                        </div>
-                                        <div class="list-item">
-                                            <div class="name-label">
-                                                <span>Exchange Rate</span>
-                                            </div>
-                                            <div class="value">
-                                                <span>1 ETH = 1 stETH</span>
-                                            </div>
-                                        </div>
-                                        <div class="list-item">
-                                            <div class="name-label">
                                                 <span>Max Transaction Cost</span>
                                             </div>
                                             <div class="value">
-                                                <span>$1.55</span>
+                                                <span>{{ this.stakeGasPrice }} ETH</span>
                                             </div>
                                         </div>
                                         <div class="list-item">
@@ -109,40 +90,31 @@
                                                 title="Please note: this fee applies to staking rewards only, and is NOT taken from your staked amount." src="@/static/images/icons/query-icon.svg" alt="?" />  
                                             </div>
                                             <div class="value">
-                                                <span>10%</span>
+                                                <span>{{ this.feeRate }}%</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="btn-content py-1 mt-1-half mb-1-half">
-                                    <button class="btn w-100">Submit</button>
+                                    <button @click="postStake()" class="btn w-100">Submit</button>
                                 </div>
                                 <div class="statistics-block">
                                     <div class="title-area d-flex justify-content-between">
                                         <div class="title">
-                                            <h6>Lido Statistics</h6>
+                                            <h6>Statistics</h6>
                                         </div>
                                         <div class="link">
                                             <a href="#">View on Etherscan</a>
                                         </div>
                                     </div>
                                     <div class="data-list">
+
                                         <div class="list-item">
                                             <div class="name-label">
-                                                <span>Annual Percentage Rate</span> 
-                                                <img class="query-icon" data-bs-toggle="tooltip" data-bs-placement="top" 
-                                                title="Moving average of APR for 7 days period." src="@/static/images/icons/query-icon.svg" alt="?" /> 
-                                            </div>
-                                            <div class="value blue-color">
-                                                <span>3.6%</span>
-                                            </div>
-                                        </div>
-                                        <div class="list-item">
-                                            <div class="name-label">
-                                                <span>Total Staked With Lido</span>
+                                                <span>Total Staked</span>
                                             </div>
                                             <div class="value">
-                                                <span>8,815,898.385 ETH</span>
+                                                <span>{{ totalStake }} ETH</span>
                                             </div>
                                         </div>
                                         <div class="list-item">
@@ -150,15 +122,15 @@
                                                 <span>Stakers</span>
                                             </div>
                                             <div class="value">
-                                                <span>272549</span>
+                                                <span>Null</span>
                                             </div>
                                         </div>
                                         <div class="list-item">
                                             <div class="name-label">
-                                                <span>stETH Market Cap</span>
+                                                <span>Market Cap</span>
                                             </div>
                                             <div class="value">
-                                                <span>$14,459,757,188</span>
+                                                <span>Null</span>
                                             </div>
                                         </div>
                                     </div>
@@ -175,16 +147,22 @@
                         <div class="header-area">
                             <div class="top-content row d-flex align-items-center">
                                 <div class="col-sm-8 left-content">
+                                    <div class="nav-item ms-auto me-0" id="claimbtn">
+                                        <a href="javascript: void(0);" class="nav-link btn-link" @click="postClaim">Claim>></a>
+                                    </div>
+                                    <!--
                                     <div class="data-label">
                                         <h6>Available To Stake</h6> <div class="status-bubble"></div>
                                     </div>
                                     <div class="data-value">
                                         <span>0.0087 ETH</span>
                                     </div>
+                                    -->
+                                    
                                 </div>
                                 <div class="col-sm-4 right-content">
                                     <div class="title">
-                                        <h3>Lido APY <em>3.6%</em></h3>
+                                        <h3>earned <em>{{ this.earned }} ETH</em></h3>
                                     </div>
                                 </div>
                             </div>
@@ -195,7 +173,7 @@
                                     </div>
                                     <div class="data-value">
                                         <span data-bs-toggle="tooltip" data-bs-placement="top" 
-                                            title="0.0099999999999998 ETH">0.0099 stETH</span>
+                                            :title="stakedAmount">{{ this.stakedAmount }}</span>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 right-content">
@@ -227,9 +205,11 @@
                                 <li class="nav-item" id="withdraw-tab">
                                     <a href="javascript: void(0);" class="nav-link active">Withdraw</a>
                                 </li>
+                                <!--box
                                 <li class="nav-item ms-auto me-0" id="claimbtn">
                                     <a href="javascript: void(0);" class="nav-link btn-link" @click="toggleClaimBox">Claim(1) >></a>
                                 </li>
+                                -->
                             </ul>
                             <div class="content">
                                 <div class="gray-field-content mb-1">
@@ -238,18 +218,18 @@
                                         <div class="label-field">
                                         <label>Amount to </label>
                                         <div class="code">
-                                            <span>Bal: <em>80.25876391</em></span>
+                                            <span>Bal: <em>{{ this.stakedAmount }}</em></span>
                                         </div>
                                         </div>
                                         <div class="field-group limit-cta amount-field simplecoin-field">
-                                        <div class="input-field">
-                                            <input type="number" placeholder="Enter" >
+                                        <div class="input-field" >
+                                            <input type="number" placeholder="Enter" v-model="inputUnstakeAmount">
                                             <div class="cta">
                                             <span>Max</span>
                                             </div>
                                             <div class="coin-name">
-                                                <img src="@/static/images/icons/steth-icon.svg" alt="icon">
-                                                <span>esETH</span>
+                                                <img src="@/static/images/icons/eth-icon.svg" alt="icon">
+                                                <span>ETH</span>
                                             </div>
                                         </div>
                                         </div>
@@ -260,15 +240,7 @@
                                                 <span>Exchange Platform</span>
                                             </div>
                                             <div class="value">
-                                                <span>Lido</span>
-                                            </div>
-                                        </div>
-                                        <div class="list-item">
-                                            <div class="name-label">
-                                                <span>Lido Exchange Rate</span>
-                                            </div>
-                                            <div class="value">
-                                                <span>1 ETH = 1 stETH</span>
+                                                <span>Nucl</span>
                                             </div>
                                         </div>
                                         <div class="list-item">
@@ -281,23 +253,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="gray-field-content">
-                                    <div class="data-list">
-                                        <div class="list-item">
-                                            <div class="name-label">
-                                                <img src="@/static/images/icons/liquidity-icon.svg" alt="icon">
-                                                <span>You Will Receive</span>
-                                            </div>
-                                            <div class="value">
-                                                <span><strong>80 ETH</strong></span>
-                                                <img class="query-icon" data-bs-toggle="tooltip" data-bs-placement="top" 
-                                                title="The final amount of claimable ETH can differ.For more info, please read FAQ" src="@/static/images/icons/query-icon.svg" alt="?" /> 
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 <div class="btn-content py-1 mt-1-half mb-1-half">
-                                    <button class="btn w-100">Request Withdrawal</button>
+                                    <button class="btn w-100" @click="postUnstake()">Request Withdrawal</button>
                                 </div>
                                 <div class="statistics-block">
                                     
@@ -320,22 +277,14 @@
                                                 <span>$4.54</span>
                                             </div>
                                         </div>
-                                        <div class="list-item">
-                                            <div class="name-label">
-                                                <span>Allowance</span>
-                                            </div>
-                                            <div class="value">
-                                                <span>0.0 stETH</span>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div><!--box-->
+                </div>
 
-                <!-- Box -->
+                <!-- claim
                 <div id="claimCoinboxblock" class="stake-box-block box-item" v-else>
                     <div class="box-content">
                         <div class="header-area">
@@ -345,7 +294,7 @@
                                         <h6>Available To Claim</h6> <div class="status-bubble"></div>
                                     </div>
                                     <div class="data-value">
-                                        <span>0.0087 ETH</span>
+                                        <span>Null</span>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 right-content">
@@ -353,8 +302,7 @@
                                         <h6>My Pending Amount</h6>
                                     </div>
                                     <div class="data-value">
-                                        <span data-bs-toggle="tooltip" data-bs-placement="top" 
-                                            title="0.0099999999999998 ETH">0.0087 stETH</span>
+                                        <span data-bs-toggle="tooltip" data-bs-placement="top" >0.0087 stETH</span>
                                     </div>
                                 </div>
                             </div>
@@ -471,7 +419,8 @@
                             </div>
                         </div>
                     </div>
-                </div><!--box-->
+                </div>
+            -->
 
             </div>
         </div>
@@ -480,8 +429,22 @@
 </template>
 
 <script>
-import Header from '@/components/Header.vue';
+import Web3 from 'web3'
+import BigNumber from "bignumber.js";
 import { Tooltip } from 'bootstrap';
+import { watch } from 'vue';
+
+import Header from '@/components/Header.vue';
+
+import { useUserStore, useAlertStore } from '@/store/index.js'
+import { initContractConnection } from '@/assets/js/web3.js'
+import { PROVIDER_CONFIG } from "@/assets/js/config.js"
+import { filterAddress, filterDecimal } from '@/assets/js/filters.js'
+import { STATUS_NOT_LOGGED_IN, STATUS_LOGGED_IN, STATUS_DISCONNECTED, WALLETCONNECT, METAMASK, ETHEREUM, BNB} from '@/assets/js/constant.js'
+
+import stakePoolAbi from '@/assets/abi/stakePool.json';
+
+
 export default {
   components: {
     Header,
@@ -491,14 +454,262 @@ export default {
         showStakeBox: true,
         showWithdrawBox: false,
         showClaimBox: false,
+
+        userStore: useUserStore(),
+        alertStore: useAlertStore(),
+
+        inputStakeAmount: null,
+        inputUnstakeAmount: null,
+
+        earned: 0,
+        stakedAmount: 0,
+        stakeGasPrice: 0,
+        feeRate: 0,
+
+        totalStake: 0,
+        stakers: null,
+        marketCap: null,
+
+
     }
     },
   mounted() {
     new Tooltip(document.body, {
       selector: "[data-bs-toggle='tooltip']",
     })
+
+    this.getTotalStake()
+    this.getFeeRate()
+    this.getEarned()
+    this.getUserStakeAmount()
   },
   methods:{
+        async getTotalStake() {
+            watch(() => this.userStore.status, async (newStatus) => {
+                console.log(newStatus)
+                switch (newStatus) {
+                    
+                    case STATUS_NOT_LOGGED_IN:
+                        this.totalStake = "0"
+                        break
+
+                    case STATUS_LOGGED_IN:
+                        const value = await this._getTotalStake();
+                        this.totalStake = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        break
+            }
+            }, {immediate: true});
+        },
+
+        async _getTotalStake(){
+            
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                const value = await contract.methods.totalStaked().call();
+                return value;
+
+            } catch(e) {
+                console.error(e)
+            };
+        },
+
+        async getUserStakeAmount() {
+            watch(() => this.userStore.status, async (newStatus) => {
+                switch (newStatus) {
+                    
+                    case STATUS_NOT_LOGGED_IN:
+                        this.stakedAmount = "0"
+                        break
+
+                    case STATUS_LOGGED_IN:
+                        const value = await this._getUserStakeAmount();
+                        console.log(value)
+                        this.stakedAmount = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        break
+            }
+            }, {immediate: true});
+        },
+
+        async _getUserStakeAmount(){
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                const value = await contract.methods.getStakingAmount(this.userStore.address).call();
+                return value;
+
+            } catch(e) {
+                console.error(e)
+                return 0
+            };
+        },
+
+        async getEarned() {
+            watch(() => this.userStore.status, async (newStatus) => {
+                console.log(newStatus)
+                switch (newStatus) {
+                    
+                    case STATUS_NOT_LOGGED_IN:
+                        this.earned = "0"
+                        break
+
+                    case STATUS_LOGGED_IN:
+                        const value = await this._getEarned();
+                        this.earned = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        break
+            }
+            }, {immediate: true});
+        },
+
+        async _getEarned(){
+
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                const value = await contract.methods.earned(this.userStore.address).call();
+                return value;
+
+            } catch(e) {
+                console.error(e);
+            };
+        },
+
+        async getFeeRate() {
+            watch(() => this.userStore.status, async (newStatus) => {
+                console.log(newStatus)
+                switch (newStatus) {
+                    
+                    case STATUS_NOT_LOGGED_IN:
+                        this.feeRate = "0"
+                        break
+
+                    case STATUS_LOGGED_IN:
+                        const value = await this._getFeeRate();
+                        console.log(value)
+                        this.feeRate = new BigNumber(value).div(1000000).toString();
+                        break
+            }
+            }, {immediate: true});
+        },
+
+        async _getFeeRate(){
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                const value = await contract.methods.feeRate().call();
+                return value;
+
+            } catch(e) {
+                console.error(e)
+                return 0
+            };
+        },
+
+        async getStakeGasPrice() {
+            watch(() => this.userStore.status, async (newStatus) => {
+                console.log(newStatus)
+                switch (newStatus) {
+                    
+                    case STATUS_NOT_LOGGED_IN:
+                        this.stakeGasPrice = "0"
+                        break
+
+                    case STATUS_LOGGED_IN:
+                        const value = await this._getStakeGasPrice();
+                        console.log (value)
+                        this.stakeGasPrice = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        break
+            }
+            }, {immediate: true});
+        },
+
+        async _getStakeGasPrice(){
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                const stakeAmount = Web3.utils.toWei(this.inputStakeAmount, 'ether');
+                const gasAmount = new BigNumber(await contract.methods.stake(stakeAmount).estimateGas({value: stakeAmount}))
+                const gasPrice = new BigNumber(await this.userStore.web3Provider.eth.getGasPrice())
+
+                console.log(gasAmount, gasPrice)
+                const totalCost = gasAmount.multipliedBy(gasPrice);
+
+                return totalCost
+
+            } catch(e) {
+                console.error(e)
+                return 0
+            };
+        },
+
+        async postStake(){
+            
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                const stakeAmount = Web3.utils.toWei(this.inputStakeAmount, 'ether');
+                console.log(stakeAmount)
+
+                await contract.methods.stake(stakeAmount)
+                    .send({value: stakeAmount})
+                    .on('transactionHash', function(hash){
+                        console.log('transactionHash', hash);
+                    })
+                    .on('receipt', function(receipt){
+                        console.log('receipt', receipt);
+                    })
+                    .on('error', function(error, receipt) {
+                        console.log('error', error);
+                    });
+
+            } catch(e) {
+                console.error(e)
+            };
+            
+        },
+
+        async postUnstake(){
+            
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                const unstakeAmount = Web3.utils.toWei(this.inputUnstakeAmount, 'ether');
+                console.log(unstakeAmount)
+
+                await contract.methods.unstake(unstakeAmount, this.userStore.address)
+                    .send()
+                    .on('transactionHash', function(hash){
+                        console.log('transactionHash', hash);
+                    })
+                    .on('receipt', function(receipt){
+                        console.log('receipt', receipt);
+                    })
+                    .on('error', function(error, receipt) {
+                        console.log('error', error);
+                    });
+
+            } catch(e) {
+                console.error(e)
+            };
+        },
+
+        async postClaim(){
+            
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+
+                await contract.methods.claimRewards ()
+                    .send()
+                    .on('transactionHash', function(hash){
+                        console.log('transactionHash', hash);
+                    })
+                    .on('receipt', function(receipt){
+                        console.log('receipt', receipt);
+                    })
+                    .on('error', function(error, receipt) {
+                        console.log('error', error);
+                    });
+
+            } catch(e) {
+                console.error(e)
+            };
+        },
+
+
+
         toggleStakeBox(){
             this.showWithdrawBox = false;
             this.showStakeBox = true;

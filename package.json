@@ -10,11 +10,18 @@
   },
   "dependencies": {
     "@antv/g2plot": "^2.4.31",
+    "@walletconnect/web3-provider": "^1.8.0",
+    "@web3-react/core": "^8.2.3",
+    "@web3-react/injected-connector": "^6.0.7",
+    "@web3-react/walletconnect-connector": "^6.2.13",
+    "bignumber.js": "^9.1.2",
     "bootstrap": "^5.3.2",
+    "pinia": "^2.1.7",
     "sass": "^1.69.3",
     "vue": "^3.3.4",
     "vue-router": "^4.2.5",
-    "vue-svg-loader": "^0.16.0"
+    "vue-svg-loader": "^0.16.0",
+    "web3": "^4.2.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",

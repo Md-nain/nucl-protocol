@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Profile from '@/pages/Profile.vue';
-import Settings from '@/pages/Settings.vue';
-import Automated from '@/pages/Automated.vue';
+import Profile from '@/pages/profile.vue';
+import Settings from '@/pages/settings.vue';
+import Automated from '@/pages/automated.vue';
 import StETHETHRecursiveStaking from '@/pages/StETHETHRecursiveStaking.vue'; 
 import AdditionalModals from '@/pages/additionalModals.vue'; 
-import Staking from '@/pages/staking.vue'; 
+import Staking from '@/pages/staking.vue';
 
 const routes = [
   { path: '/', component: Profile },
@@ -17,7 +17,9 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
+  
   routes,
 });
+
 
 export default router;

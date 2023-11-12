@@ -774,38 +774,28 @@
             </div><!-- aside content -->
           </div><!-- profile-aside-->
         </div>
-
-
-         <!-- Bottom Right Alert -->
-         <div class="alert bottom-right-alert" v-if="showBottomRightAlert">
-            <div class="alert-content">
-              <div class="alert-header">
-                <div class="heading">
-                  <h6>Wallet Connected</h6>
-                </div>
-                <button type="button" class="btn-close" @click="hideBottomRightAlert">
-                  
-                </button>
-              </div>
-              <div class="alert-body">
-                <span>0xf37386577ede41efc7aeA90C50572C91465e195e</span>
-              </div>
-            </div>
-          </div><!-- Bottom Right Alert -->
-
       </div>
     </main>
 </template>
 
 
 <script>
+import { watch } from 'vue'
 import Header from '@/components/Header.vue';
+
+import { useUserStore, useAlertStore } from '../store/index.js';
+import { STATUS_NOT_LOGGED_IN, STATUS_LOGGED_IN, STATUS_DISCONNECTED, WALLETCONNECT, METAMASK } from '@/assets/js/constant.js'
+import { filterAddress, filterDecimal } from '@/assets/js/filters.js'
+
 export default {
   components: {
     Header,
   },
+
   data() {
     return {
+      alertStore: useAlertStore(),
+
       showWalletbox: true,
       depositScreen: false,
       depositAmountScreen: false,
@@ -814,7 +804,33 @@ export default {
       showBottomRightAlert: false,
     }
   },
+
+  mounted() {
+    this.watchLoginStatus();
+    
+    
+
+  },
+  
   methods: {
+
+    watchLoginStatus() {
+        const userStore = useUserStore();
+        
+        // 设置一个 watcher 来监听 isLogin 的变化
+        watch(() => userStore.status, (newLoginStatus) => {
+          // 当 isLogin 变为 true 时执行 afterLogin
+          if (newLoginStatus === STATUS_LOGGED_IN) {
+            this.showBottomRightAlert = true
+          }
+        });
+      },
+    
+    userAddress() {
+      const userStore = useUserStore();
+      return userStore.address; // 或者是任何默认值
+    },
+
     showWalletDataScreen(){
       this.showWalletbox= true;
       this.depositScreen = false;
@@ -840,11 +856,6 @@ export default {
     hideBottomRightAlert() {
       this.showBottomRightAlert = false; 
     },
-  },
-  mounted() {
-    setTimeout(() => {
-      this.showBottomRightAlert = true; // Trigger the animation
-    }, 500);
   },
 }
 </script>
