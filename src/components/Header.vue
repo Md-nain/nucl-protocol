@@ -25,16 +25,6 @@
                             <img src="../static/images/logo.svg" width="140" height="48" alt="logo">
                         </div>
                         <ul class="navbar-nav me-auto">
-                            <li class="nav-item external-btn">
-                                <router-link to="/staking" class="nav-link">
-                                    Staking <img src="@/static/images/icons/external-btn-icon.svg" alt="icon">
-                                </router-link>
-                            </li>
-                            <li class="nav-item external-btn">
-                                <a href="javascript:void(0);" class="nav-link" target="_blank">
-                                    Strategy Vaults <img src="@/static/images/icons/external-btn-icon.svg" alt="icon">
-                                </a>
-                            </li>
 
                             <li class="nav-item new-item" v-if="showNewListItem">
                                 <a href="javascript:void(0);" class="nav-link d-flex">
@@ -212,11 +202,53 @@
     },
     mounted() {
         this.watchLoginStatus();
-        this.getBalance()
+        this.watchAccountChanged();
+        this.watchChainChanged();
+        this.getBalance();
+        
         
     },
 
     methods: {
+        async watchAccountChanged(){
+            
+            window.ethereum.on('accountsChanged', async(accounts) => {
+                if (accounts.length === 0) {
+                    this.userStore.setStatus(STATUS_DISCONNECTED)
+                    console.log('Disconnection now.');
+                } else {
+                    const currentChainId = Web3.utils.toHex(await this.userStore.web3Provider.eth.getChainId())
+                    console.log('Switched account:', accounts[0]);
+                    this.userStore.setAddress(accounts[0])
+                    this.userStore.setChainId(currentChainId)
+                    this.userStore.setStatus(STATUS_LOGGED_IN)
+                    this.userStore.update()
+                }
+            });
+        },
+
+        async watchChainChanged(){
+            
+            window.ethereum.on('chainChanged', async (chainId) => {
+                                
+                switch (chainId) {
+
+                    case PROVIDER_CONFIG.ethChainId:
+                        this.userStore.setChainId(chainId)
+                        console.log('Chain changed to:', chainId);
+                        break
+
+                    case PROVIDER_CONFIG.bnbChainID:
+                        this.userStore.setChainId(chainId)
+                        console.log('Chain changed to:', chainId);
+                        break
+
+                    default:
+                        await this.switchChain(ETHEREUM)
+                        break
+                }
+            });
+        },
 
         async switchChain(option){
             const connector = this.userStore.connector
@@ -250,8 +282,8 @@
                 switch (newLoginStatus) {
                     case STATUS_LOGGED_IN:
                         this.afterLogin();
-                        
-                        break
+                        break;
+
                     default:
                         this.isConnention();
                 }
@@ -296,17 +328,6 @@
                             this.userStore.setChainId(currentChainId)
                             console.log('Connected account:', accounts[0]);
                             this.userStore.setStatus(STATUS_LOGGED_IN)
-                            window.ethereum.on('accountsChanged', (accounts) => {
-                                if (accounts.length === 0) {
-                                    this.userStore.setStatus(STATUS_DISCONNECTED)
-                                    console.log('Disconnection now.');
-                                } else {
-                                    console.log('Switched account:', accounts[0]);
-                                    this.userStore.setAddress(accounts[0])
-                                    this.userStore.setChainId(currentChainId)
-                                    this.userStore.setStatus(STATUS_LOGGED_IN)
-                                }
-                            });
 
                             switch (currentChainId) {
                                 case PROVIDER_CONFIG.ethChainId:
@@ -323,26 +344,6 @@
                                     await this.switchChain(ETHEREUM)
                                     break 
                             }
-
-                            window.ethereum.on('chainChanged', async (chainId) => {
-                                
-                                switch (chainId) {
-
-                                    case PROVIDER_CONFIG.ethChainId:
-                                        this.userStore.setChainId(chainId)
-                                        console.log('Chain changed to:', chainId);
-                                        break
-
-                                    case PROVIDER_CONFIG.bnbChainID:
-                                        this.userStore.setChainId(chainId)
-                                        console.log('Chain changed to:', chainId);
-                                        break
-
-                                    default:
-                                        await this.switchChain(ETHEREUM)
-                                        break
-                                }
-                            });
                         }
 
                     } catch (error) {
@@ -394,15 +395,11 @@
         
         },
 
-        async _getBalance() {
-            const provider = this.userStore.web3Provider
-            const balance = await provider.utils.fromWei(await provider.eth.getBalance(this.userStore.address), 'ether');
-            return balance
-        },
+        
 
         async getBalance() {
-            watch(() => this.userStore.status, async (newStatus) => {
-                console.log(newStatus)
+            watch([() => this.userStore.status, () => this.userStore.timestamp], async ([newStatus], [newUpdate]) => {
+                console.log("getBalance", newStatus)
                 switch (newStatus) {
                     case STATUS_LOGGED_IN:
                         const balance = await this._getBalance();
@@ -410,6 +407,12 @@
                         break
             }
             }, {immediate: true});
+        },
+
+        async _getBalance() {
+            const provider = this.userStore.web3Provider
+            const balance = await provider.utils.fromWei(await provider.eth.getBalance(this.userStore.address), 'ether');
+            return balance
         },
         
         toggleNavbar() {

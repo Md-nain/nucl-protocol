@@ -17,6 +17,23 @@
                             <span>My Profile</span>
                         </router-link>
                     </li>
+                    <li>
+                        <router-link to="/staking">
+                            <div class="icon">
+                                <img src="@/static/images/icons/sub-nav-icon.svg" alt="icon">
+                            </div>
+                            <span>Staking</span>
+                        </router-link>
+                    </li>
+                    <li>
+                        <router-link to="/stETHETHRecursiveStaking">
+                            <div class="icon">
+                                <img src="@/static/images/icons/sub-nav-icon.svg" alt="icon">
+                            </div>
+                            <span>RecursiveStaking</span>
+                        </router-link>
+                    </li>
+                    <!--
                     <li :class="{ 'active': isSubmenuActive() }">
                         <a href="javascript:void(0);" @click="toggleSubMenu">
                             <div class="icon">
@@ -25,6 +42,7 @@
                             <span>Automated Strategies</span>
                         </a>
                     </li>
+                    -->
                 </ul>
             </div>
             <div class="lower-content">
@@ -56,6 +74,7 @@
                     </div>
                 </div>
             </div>
+            <!-- 
             <div class="sidebar-submenu" v-show="showSubMenu">
                 <div class="submenu-content">
                     <div class="close" @click="closeSubMenu">
@@ -64,6 +83,7 @@
                     <div class="title-area">
                         <span>Automated Strategies</span>
                     </div>
+                    
                     <div class="navigation-content">
                         <ul>
                             <li>
@@ -82,7 +102,7 @@
                                     <span>Additional Modals</span>
                                 </router-link>
                             </li>
-                            <!-- 
+                            
                             <li>
                                 <router-link to="/stETHETHRecursiveStakingpage3">
                                     <div class="icon">
@@ -90,11 +110,12 @@
                                     </div>
                                     <span>Leveraged stETH-ETH Arbitrage</span>
                                 </router-link>
-                            </li> -->
+                            </li> 
                         </ul>
                     </div>
                 </div>
             </div>
+            -->
         </div>
     </div>
 </template>

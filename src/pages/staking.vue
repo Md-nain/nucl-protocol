@@ -7,7 +7,7 @@
                 <h2>Ether Staking</h2>
             </div>
             <div class="title-description">
-                <p>Stake ETH and receive stETH while staking</p>
+                <p>Stake ETH and receive ETH while staking</p>
             </div>
             <div class="boxes-content-holder">
                 <!-- Stake Box -->
@@ -55,14 +55,14 @@
                                         <div class="label-field">
                                         <label>Amount to </label>
                                         <div class="code">
-                                            <span>Bal: <em>{{ userStore.balance }}</em></span>
+                                            <span>Bal: <em>{{ userStore.balance }} ETH</em></span>
                                         </div>
                                         </div>
                                         <div class="field-group limit-cta amount-field simplecoin-field">
                                         <div class="input-field">
                                             <input type="number" placeholder="Enter" v-model="inputStakeAmount" @blur="getStakeGasPrice">
                                             <div class="cta">
-                                            <span>Max</span>
+                                            <span @click="putMaxStakeAmount()">Max</span>
                                             </div>
                                             <div class="coin-name">
                                                 <img src="@/static/images/icons/eth-icon.svg" alt="icon">
@@ -162,7 +162,7 @@
                                 </div>
                                 <div class="col-sm-4 right-content">
                                     <div class="title">
-                                        <h3>earned <em>{{ this.earned }} ETH</em></h3>
+                                        <h3>earned <em>{{ earned }} ETH</em></h3>
                                     </div>
                                 </div>
                             </div>
@@ -173,26 +173,15 @@
                                     </div>
                                     <div class="data-value">
                                         <span data-bs-toggle="tooltip" data-bs-placement="top" 
-                                            :title="stakedAmount">{{ this.stakedAmount }}</span>
+                                            :title="stakedAmount">{{ stakedAmount }}</span>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 right-content">
                                     <div class="data-label">
-                                        <h6>My requests</h6>
-                                        <img class="query-icon white-icon" data-bs-toggle="tooltip" data-bs-placement="top" 
-                                        title="The withdrawal request time depends on the mode, overall amount of stETH in queue and other factors. Mode: Turbo, Amount: 67283.3465 stETH, Waiting time: 1-4 day(s)" src="@/static/images/icons/query-icon.svg" alt="?" /> 
+                                        <h6>My Pending Amount</h6>
                                     </div>
                                     <div class="data-value">
-                                        <div class="req-list">
-                                            <div class="req-item">
-                                                <img src="@/static/images/icons/green-squre-tik-icon.svg" alt="icon">
-                                                <span>1</span>
-                                            </div>
-                                            <div class="req-item">
-                                                <img src="@/static/images/icons/orange-timer-icon.svg" alt="icon">
-                                                <span>0</span>
-                                            </div>
-                                        </div>
+                                        <span data-bs-toggle="tooltip" data-bs-placement="top" >{{ pendingAmount }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -218,14 +207,14 @@
                                         <div class="label-field">
                                         <label>Amount to </label>
                                         <div class="code">
-                                            <span>Bal: <em>{{ this.stakedAmount }}</em></span>
+                                            <span>Bal: <em>{{ userStore.balance }} ETH</em></span>
                                         </div>
                                         </div>
                                         <div class="field-group limit-cta amount-field simplecoin-field">
                                         <div class="input-field" >
                                             <input type="number" placeholder="Enter" v-model="inputUnstakeAmount">
                                             <div class="cta">
-                                            <span>Max</span>
+                                            <span @click="putMaxUnstakeAmount()">Max</span>
                                             </div>
                                             <div class="coin-name">
                                                 <img src="@/static/images/icons/eth-icon.svg" alt="icon">
@@ -470,7 +459,7 @@ export default {
         stakers: null,
         marketCap: null,
 
-
+        pendingAmount: 0,
     }
     },
   mounted() {
@@ -482,11 +471,18 @@ export default {
     this.getFeeRate()
     this.getEarned()
     this.getUserStakeAmount()
+    this.getPendingAmount()
   },
   methods:{
+        putMaxStakeAmount() {
+            this.inputStakeAmount = this.userStore.balance
+        },
+        putMaxUnstakeAmount() {
+            this.inputUnstakeAmount = this.userStore.balance
+        },
         async getTotalStake() {
-            watch(() => this.userStore.status, async (newStatus) => {
-                console.log(newStatus)
+            watch([() => this.userStore.status, () => this.userStore.timestamp], async ([newStatus], [newUpdate]) => {
+                console.log("getTotalStake", newStatus)
                 switch (newStatus) {
                     
                     case STATUS_NOT_LOGGED_IN:
@@ -513,8 +509,39 @@ export default {
             };
         },
 
+        async getPendingAmount() {
+            watch([() => this.userStore.status, () => this.userStore.timestamp], async ([newStatus], [newUpdate]) => {
+                console.log("getPendingAmount", newStatus)
+                switch (newStatus) {
+                    
+                    case STATUS_NOT_LOGGED_IN:
+                        this.pendingAmount = "0"
+                        break
+
+                    case STATUS_LOGGED_IN:
+                        const value = await this._getPendingAmount();
+                        this.pendingAmount = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        break
+            }
+            }, {immediate: true});
+        },
+
+        async _getPendingAmount(){
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                const value = await contract.methods.getPendingUnstakesOf(this.userStore.address).call();
+                return value;
+
+            } catch(e) {
+                console.error(e)
+                return 0
+            };
+        },
+
         async getUserStakeAmount() {
-            watch(() => this.userStore.status, async (newStatus) => {
+            
+            watch([() => this.userStore.status, () => this.userStore.timestamp], async ([newStatus], [newUpdate]) => {
+                console.log("getUserStakeAmount", newStatus)
                 switch (newStatus) {
                     
                     case STATUS_NOT_LOGGED_IN:
@@ -523,7 +550,6 @@ export default {
 
                     case STATUS_LOGGED_IN:
                         const value = await this._getUserStakeAmount();
-                        console.log(value)
                         this.stakedAmount = this.userStore.web3Provider.utils.fromWei(value, 'ether');
                         break
             }
@@ -543,8 +569,8 @@ export default {
         },
 
         async getEarned() {
-            watch(() => this.userStore.status, async (newStatus) => {
-                console.log(newStatus)
+            watch([() => this.userStore.status, () => this.userStore.timestamp], async ([newStatus], [newUpdate]) => {
+                console.log("getEarned", newStatus)
                 switch (newStatus) {
                     
                     case STATUS_NOT_LOGGED_IN:
@@ -568,12 +594,13 @@ export default {
 
             } catch(e) {
                 console.error(e);
+                return 0
             };
         },
 
         async getFeeRate() {
-            watch(() => this.userStore.status, async (newStatus) => {
-                console.log(newStatus)
+            watch([() => this.userStore.status, () => this.userStore.timestamp], async ([newStatus], [newUpdate]) => {
+                console.log("getFeeRate", newStatus)
                 switch (newStatus) {
                     
                     case STATUS_NOT_LOGGED_IN:
@@ -582,7 +609,6 @@ export default {
 
                     case STATUS_LOGGED_IN:
                         const value = await this._getFeeRate();
-                        console.log(value)
                         this.feeRate = new BigNumber(value).div(1000000).toString();
                         break
             }
@@ -602,33 +628,29 @@ export default {
         },
 
         async getStakeGasPrice() {
-            watch(() => this.userStore.status, async (newStatus) => {
-                console.log(newStatus)
-                switch (newStatus) {
-                    
-                    case STATUS_NOT_LOGGED_IN:
-                        this.stakeGasPrice = "0"
-                        break
 
-                    case STATUS_LOGGED_IN:
-                        const value = await this._getStakeGasPrice();
-                        console.log (value)
-                        this.stakeGasPrice = this.userStore.web3Provider.utils.fromWei(value, 'ether');
-                        break
+            switch (this.userStore.status) {
+                
+                case STATUS_NOT_LOGGED_IN:
+                    this.stakeGasPrice = "0"
+                    break
+
+                case STATUS_LOGGED_IN:
+                    const value = await this._getStakeGasPrice();
+                    this.stakeGasPrice = this.userStore.web3Provider.utils.fromWei(value, 'microether');
+                    break
             }
-            }, {immediate: true});
         },
 
         async _getStakeGasPrice(){
             try {
                 const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
                 const stakeAmount = Web3.utils.toWei(this.inputStakeAmount, 'ether');
+
                 const gasAmount = new BigNumber(await contract.methods.stake(stakeAmount).estimateGas({value: stakeAmount}))
                 const gasPrice = new BigNumber(await this.userStore.web3Provider.eth.getGasPrice())
-
-                console.log(gasAmount, gasPrice)
                 const totalCost = gasAmount.multipliedBy(gasPrice);
-
+                
                 return totalCost
 
             } catch(e) {
@@ -642,7 +664,6 @@ export default {
             try {
                 const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
                 const stakeAmount = Web3.utils.toWei(this.inputStakeAmount, 'ether');
-                console.log(stakeAmount)
 
                 await contract.methods.stake(stakeAmount)
                     .send({value: stakeAmount})
@@ -655,6 +676,7 @@ export default {
                     .on('error', function(error, receipt) {
                         console.log('error', error);
                     });
+
 
             } catch(e) {
                 console.error(e)

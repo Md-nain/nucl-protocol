@@ -1,5 +1,6 @@
 const TEST_HOST = [
     'localhost:3000',
+    'nucl.salusec.us',
     'test.com'
 ]
 

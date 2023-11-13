@@ -8,7 +8,9 @@ export const useUserStore = defineStore('user', {
       chainId: null,
       address: "0x000000000000000000000000",
       balance: "0",
-      web3Provider: null
+      currency: "ETH",
+      web3Provider: null,
+      timestamp: Date.now(),
     }),
     actions: {
       setConnector(option) {
@@ -28,6 +30,9 @@ export const useUserStore = defineStore('user', {
       },
       setWeb3Provider(option) {
         this.web3Provider = option;
+      },
+      update() {
+        this.timestamp = Date.now();
       },
     },
     persist: true
