@@ -22,7 +22,7 @@
                                 </div>
                                 <div class="col-sm-4 right-content">
                                     <div class="title">
-                                        <h3>earned <em>{{ this.earned }} ETH</em></h3>
+                                        <h3>earned <em>{{ earned }} ETH</em></h3>
                                     </div>
                                 </div>
                             </div>
@@ -33,7 +33,7 @@
                                     </div>
                                     <div class="data-value">
                                         <span data-bs-toggle="tooltip" data-bs-placement="top" 
-                                            :title="stakedAmount">{{ this.stakedAmount }}</span>
+                                            :title="stakedAmount">{{ stakedAmount }} ETH</span>
                                     </div>
                                 </div>
                             </div>
@@ -80,7 +80,7 @@
                                                 <span>Max Transaction Cost</span>
                                             </div>
                                             <div class="value">
-                                                <span>{{ this.stakeGasPrice }} ETH</span>
+                                                <span>{{ stakeGasPrice }} ETH</span>
                                             </div>
                                         </div>
                                         <div class="list-item">
@@ -90,7 +90,7 @@
                                                 title="Please note: this fee applies to staking rewards only, and is NOT taken from your staked amount." src="@/static/images/icons/query-icon.svg" alt="?" />  
                                             </div>
                                             <div class="value">
-                                                <span>{{ this.feeRate }}%</span>
+                                                <span>{{ feeRate }}%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -104,7 +104,7 @@
                                             <h6>Statistics</h6>
                                         </div>
                                         <div class="link">
-                                            <a href="#">View on Etherscan</a>
+                                            <a :href="getScanUrl()" target="_blank">View on Etherscan</a>
                                         </div>
                                     </div>
                                     <div class="data-list">
@@ -173,7 +173,7 @@
                                     </div>
                                     <div class="data-value">
                                         <span data-bs-toggle="tooltip" data-bs-placement="top" 
-                                            :title="stakedAmount">{{ stakedAmount }}</span>
+                                            :title="stakedAmount">{{ stakedAmount }} ETH</span>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 right-content">
@@ -181,7 +181,7 @@
                                         <h6>My Pending Amount</h6>
                                     </div>
                                     <div class="data-value">
-                                        <span data-bs-toggle="tooltip" data-bs-placement="top" >{{ pendingAmount }}</span>
+                                        <span data-bs-toggle="tooltip" data-bs-placement="top" >{{ pendingAmount }} ETH</span>
                                     </div>
                                 </div>
                             </div>
@@ -212,7 +212,7 @@
                                         </div>
                                         <div class="field-group limit-cta amount-field simplecoin-field">
                                         <div class="input-field" >
-                                            <input type="number" placeholder="Enter" v-model="inputUnstakeAmount">
+                                            <input type="number" placeholder="Enter" v-model="inputUnstakeAmount" @blur="getUnstakeGasPrice(); getUnlockedCost()">
                                             <div class="cta">
                                             <span @click="putMaxUnstakeAmount()">Max</span>
                                             </div>
@@ -255,7 +255,7 @@
                                                 title="The final amount of claimable ETH can differ.For more info, please read FAQ" src="@/static/images/icons/query-icon.svg" alt="?" /> 
                                             </div>
                                             <div class="value blue-color">
-                                                <span>Free</span>
+                                                <span>{{ unlockedCost }} ETH</span>
                                             </div>
                                         </div>
                                         <div class="list-item">
@@ -263,7 +263,7 @@
                                                 <span>Max Transaction Cost</span>
                                             </div>
                                             <div class="value">
-                                                <span>$4.54</span>
+                                                <span>{{ unstakeGasPrice }} ETH</span>
                                             </div>
                                         </div>
                                     </div>
@@ -425,7 +425,7 @@ import { watch } from 'vue';
 
 import Header from '@/components/Header.vue';
 
-import { useUserStore, useAlertStore } from '@/store/index.js'
+import { useUserStore, useAlertStore, useTransactionModalStore } from '@/store/index.js'
 import { initContractConnection } from '@/assets/js/web3.js'
 import { PROVIDER_CONFIG } from "@/assets/js/config.js"
 import { filterAddress, filterDecimal } from '@/assets/js/filters.js'
@@ -446,6 +446,7 @@ export default {
 
         userStore: useUserStore(),
         alertStore: useAlertStore(),
+        transactionModalStore: useTransactionModalStore(),
 
         inputStakeAmount: null,
         inputUnstakeAmount: null,
@@ -453,6 +454,8 @@ export default {
         earned: 0,
         stakedAmount: 0,
         stakeGasPrice: 0,
+        unstakeGasPrice: 0,
+        unlockedCost: 0,
         feeRate: 0,
 
         totalStake: 0,
@@ -472,15 +475,23 @@ export default {
     this.getEarned()
     this.getUserStakeAmount()
     this.getPendingAmount()
+    
   },
   methods:{
         putMaxStakeAmount() {
-            this.inputStakeAmount = this.userStore.balance
+            this.inputStakeAmount = BigNumber(this.userStore.balance).minus(BigNumber(this.stakeGasPrice))
         },
+
         putMaxUnstakeAmount() {
-            this.inputUnstakeAmount = this.userStore.balance
+            this.inputStakeAmount = BigNumber(this.userStore.stakedAmount).minus(BigNumber(this.unstakeGasPrice)).minus(BigNumber(unlockedCost))
         },
+
+        getScanUrl() {
+            return `${this.userStore.scanUrl}/address/${PROVIDER_CONFIG.stakePoolContractAddress}`
+        },
+
         async getTotalStake() {
+            
             watch([() => this.userStore.status, () => this.userStore.timestamp], async ([newStatus], [newUpdate]) => {
                 console.log("getTotalStake", newStatus)
                 switch (newStatus) {
@@ -491,7 +502,7 @@ export default {
 
                     case STATUS_LOGGED_IN:
                         const value = await this._getTotalStake();
-                        this.totalStake = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        this.totalStake = filterDecimal(this.userStore.web3Provider.utils.fromWei(value, 'ether'), 8).toString();
                         break
             }
             }, {immediate: true});
@@ -520,7 +531,7 @@ export default {
 
                     case STATUS_LOGGED_IN:
                         const value = await this._getPendingAmount();
-                        this.pendingAmount = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        this.pendingAmount = filterDecimal(this.userStore.web3Provider.utils.fromWei(value, 'ether'), 8).toString();
                         break
             }
             }, {immediate: true});
@@ -550,7 +561,7 @@ export default {
 
                     case STATUS_LOGGED_IN:
                         const value = await this._getUserStakeAmount();
-                        this.stakedAmount = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        this.stakedAmount = filterDecimal(this.userStore.web3Provider.utils.fromWei(value, 'ether'), 8);
                         break
             }
             }, {immediate: true});
@@ -579,7 +590,7 @@ export default {
 
                     case STATUS_LOGGED_IN:
                         const value = await this._getEarned();
-                        this.earned = this.userStore.web3Provider.utils.fromWei(value, 'ether');
+                        this.earned = filterDecimal(this.userStore.web3Provider.utils.fromWei(value, 'ether'), 8);
                         break
             }
             }, {immediate: true});
@@ -588,8 +599,10 @@ export default {
         async _getEarned(){
 
             try {
+                
                 const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
                 const value = await contract.methods.earned(this.userStore.address).call();
+                console.log(this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, value)
                 return value;
 
             } catch(e) {
@@ -609,7 +622,7 @@ export default {
 
                     case STATUS_LOGGED_IN:
                         const value = await this._getFeeRate();
-                        this.feeRate = new BigNumber(value).div(1000000).toString();
+                        this.feeRate = new BigNumber(value).div(1000000);
                         break
             }
             }, {immediate: true});
@@ -628,7 +641,7 @@ export default {
         },
 
         async getStakeGasPrice() {
-
+            
             switch (this.userStore.status) {
                 
                 case STATUS_NOT_LOGGED_IN:
@@ -637,7 +650,7 @@ export default {
 
                 case STATUS_LOGGED_IN:
                     const value = await this._getStakeGasPrice();
-                    this.stakeGasPrice = this.userStore.web3Provider.utils.fromWei(value, 'microether');
+                    this.stakeGasPrice = this.userStore.web3Provider.utils.fromWei(value, 'ether');
                     break
             }
         },
@@ -648,8 +661,79 @@ export default {
                 const stakeAmount = Web3.utils.toWei(this.inputStakeAmount, 'ether');
 
                 const gasAmount = new BigNumber(await contract.methods.stake(stakeAmount).estimateGas({value: stakeAmount}))
-                const gasPrice = new BigNumber(await this.userStore.web3Provider.eth.getGasPrice())
-                const totalCost = gasAmount.multipliedBy(gasPrice);
+                
+                const gasPriceGwei = await this.userStore.web3Provider.eth.getGasPrice()
+                const gasPriceWei = new BigNumber(Web3.utils.toWei(gasPriceGwei, 'gwei'))
+                console.log(`gasAmount: ${gasAmount}, gasPrice: ${gasPriceGwei} Gwei, gasPrice: ${gasPriceWei} Wei`)
+                const totalCost = gasAmount.multipliedBy(gasPriceWei);
+                
+                return totalCost
+
+            } catch(e) {
+                console.error(e)
+                return 0
+            };
+        },
+
+        async getUnstakeGasPrice() {
+            
+            switch (this.userStore.status) {
+                
+                case STATUS_NOT_LOGGED_IN:
+                    this.unstakeGasPrice = "0"
+                    break
+
+                case STATUS_LOGGED_IN:
+                    const value = await this._getUnstakeGasPrice();
+                    this.unstakeGasPrice = this.userStore.web3Provider.utils.fromWei(value, 'ether').toString();
+                    break
+            }
+        },
+
+        async _getUnstakeGasPrice(){
+            try {
+                const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+
+                const unstakeAmount = Web3.utils.toWei(this.inputUnstakeAmount, 'ether');
+                console.log(`unstakeAmount: ${unstakeAmount}, address: ${this.userStore.address}`)
+                const gasAmount = new BigNumber(await contract.methods.unstake(unstakeAmount, this.userStore.address).estimateGas())
+                const gasPriceGwei = await this.userStore.web3Provider.eth.getGasPrice()
+                const gasPriceWei = new BigNumber(Web3.utils.toWei(gasPriceGwei, 'gwei'))
+                console.log(`gasAmount: ${gasAmount}, gasPrice: ${gasPriceGwei} Gwei, gasPrice: ${gasPriceWei} Wei`)
+                const totalCost = gasAmount.multipliedBy(gasPriceWei);
+                
+                return totalCost
+
+            } catch(e) {
+                console.error(e)
+                return 0
+            };
+        },
+
+        async getUnlockedCost() {
+            
+            switch (this.userStore.status) {
+                
+                case STATUS_NOT_LOGGED_IN:
+                    this.unlockedCost = "0"
+                    break
+
+                case STATUS_LOGGED_IN:
+                    const value = await this._getUnlockedCost();
+                    this.unlockedCost = this.userStore.web3Provider.utils.fromWei(value, 'ether').toString();
+                    break
+            }
+        },
+
+        async _getUnlockedCost(){
+            try {
+  
+                const unstakeAmount = new BigNumber(Web3.utils.toWei(this.inputUnstakeAmount, 'ether'))
+                const unstakeGasPrice = new BigNumber(Web3.utils.toWei(this.unstakeGasPrice, 'ether'))
+                const feeRate = new BigNumber(this.feeRate).dividedBy(100);
+                
+                const fee = unstakeAmount.multipliedBy(feeRate);
+                const totalCost = fee.plus(unstakeGasPrice);
                 
                 return totalCost
 
@@ -660,48 +744,59 @@ export default {
         },
 
         async postStake(){
-            
             try {
+                this.transactionModalStore.showPendingModal()
                 const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
                 const stakeAmount = Web3.utils.toWei(this.inputStakeAmount, 'ether');
+                let txid;
 
                 await contract.methods.stake(stakeAmount)
                     .send({value: stakeAmount})
-                    .on('transactionHash', function(hash){
-                        console.log('transactionHash', hash);
+                    .on('transactionHash', (hash) => {
+                        console.log("transactionHash", hash)
+                        this.alertStore.show('Transaction created', hash);
+                        txid = hash;
+                        
                     })
-                    .on('receipt', function(receipt){
+                    .on('receipt', (receipt) => {
+                        this.transactionModalStore.showConfirmedModal(this.userStore.scanUrl, txid)
                         console.log('receipt', receipt);
                     })
-                    .on('error', function(error, receipt) {
+                    .on('error', (error, receipt) => {
+                        this.transactionModalStore.showFailedModal(this.userStore.scanUrl, txid)
                         console.log('error', error);
                     });
 
 
             } catch(e) {
                 console.error(e)
-            };
+            } 
             
         },
 
         async postUnstake(){
-            
             try {
+                this.transactionModalStore.showPendingModal()
                 const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
                 const unstakeAmount = Web3.utils.toWei(this.inputUnstakeAmount, 'ether');
-                console.log(unstakeAmount)
+                let txid;
 
                 await contract.methods.unstake(unstakeAmount, this.userStore.address)
                     .send()
-                    .on('transactionHash', function(hash){
+                    .on('transactionHash', (hash) => {
                         console.log('transactionHash', hash);
+                        this.alertStore.show('Transaction created', hash);
+                        txid = hash;
                     })
-                    .on('receipt', function(receipt){
+                    .on('receipt', (receipt) => {
+                        this.transactionModalStore.showConfirmedModal(this.userStore.scanUrl, txid)
                         console.log('receipt', receipt);
                     })
-                    .on('error', function(error, receipt) {
+                    .on('error', (error, receipt) => {
+                        this.transactionModalStore.showFailedModal(this.userStore.scanUrl, txid)
                         console.log('error', error);
                     });
+
 
             } catch(e) {
                 console.error(e)
@@ -709,21 +804,28 @@ export default {
         },
 
         async postClaim(){
-            
             try {
+                this.transactionModalStore.showPendingModal()
                 const contract = await initContractConnection(this.userStore.web3Provider, this.userStore.address, PROVIDER_CONFIG.stakePoolContractAddress, stakePoolAbi)
+                let txid;
 
                 await contract.methods.claimRewards ()
                     .send()
-                    .on('transactionHash', function(hash){
+                    .on('transactionHash', (hash) => {
                         console.log('transactionHash', hash);
+                        
+                        this.alertStore.show('Transaction created', hash);
+                        txid = hash;
                     })
-                    .on('receipt', function(receipt){
+                    .on('receipt', (receipt) => {
+                        this.transactionModalStore.showConfirmedModal(this.userStore.scanUrl, txid)
                         console.log('receipt', receipt);
                     })
-                    .on('error', function(error, receipt) {
+                    .on('error', (error, receipt) => {
+                        this.transactionModalStore.showFailedModal(this.userStore.scanUrl, txid)
                         console.log('error', error);
                     });
+
 
             } catch(e) {
                 console.error(e)

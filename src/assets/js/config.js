@@ -14,12 +14,13 @@ const PROD = {
 
 const TEST = {
     ethChainId: "0x5",
-    ethRpcUrl: 'https://ethereum-goerli.publicnode.com	',
+    ethRpcUrl: 'wss://ethereum-goerli.publicnode.com',
+    ethScanUrl: 'https://goerli.etherscan.io',
     bnbChainId: "0x61",
-    bnbRpcUrl: 'https://bsc-testnet.blockpi.network/v1/rpc/public',
-    stakePoolContractAddress: "0x24ba0B6cE496b9317Ef533C15B78f5266D1e9437",
+    bnbRpcUrl: 'wss://bsc-testnet.publicnode.com',
+    bscScanUrl: 'https://testnet.bscscan.com',
     
-    
+    stakePoolContractAddress: "0x7dafa4c156a0894711ea8c6bb9c8e199d365b8dd",
 }
 
 export const PROVIDER_CONFIG = TEST_HOST.includes(location.host) ? TEST : PROD;

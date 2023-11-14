@@ -33,7 +33,7 @@
                                     </div>
                                     <div class="text">
                                         <em>Gas Balance</em>
-                                        <span>{{ userBalance() }}</span>
+                                        <span>{{ userStore.balance }}</span>
                                     </div>
                                 </a>
                             </li>
@@ -109,7 +109,7 @@
                             </li>
                             
                             <li class="nav-item" v-if="showConnectSignIn">
-                                <a href="javascript:void(0);" class="nav-link  btn" data-bs-toggle="modal" data-bs-target="#connect-modal">
+                                <a href="javascript:void(0);" class="nav-link  btn" @click="openConnectModal">
                                     Connect/Sign In
                                 </a>
                             </li>
@@ -168,8 +168,10 @@
   <script>
   import Web3 from 'web3'
 
+  import { Modal } from 'bootstrap'; 
   import { watch } from 'vue'
-  import { useUserStore } from '@/store/index.js'
+
+  import { useUserStore, useAlertStore } from '@/store/index.js'
   import { initWeb3Connention, metamaskSwitchNetwork } from '@/assets/js/web3.js'
   import { filterAddress, filterDecimal } from '@/assets/js/filters.js'
   
@@ -187,17 +189,23 @@
     
     data() {
       return {
+        newBlock: null,
         metamask: METAMASK,
         walletconnect: WALLETCONNECT,
         ethereum: ETHEREUM,
         bnb: BNB,
         userStore: useUserStore(),
+        alertStore: useAlertStore(),
+
+        connectModal: null,
+
         isNavbarOpen: false,
         showLoader: false,
         initializationText: '',
         showConnectSignIn: true,
         showNewListItem: false,
         isOpen: false,
+        intervalId: null,
       };
     },
     mounted() {
@@ -205,11 +213,35 @@
         this.watchAccountChanged();
         this.watchChainChanged();
         this.getBalance();
-        
-        
     },
 
     methods: {
+        openConnectModal() {
+            this.connectModal = new Modal(document.getElementById('connect-modal'))
+            this.connectModal.show()
+        },
+
+        hideConnectModal() {
+            if (this.connectModal){
+                this.connectModal.hide()
+            }
+        },
+
+        async watchBlock() {
+            
+            const interval = setInterval(async () => {
+                this.newBlock = await this.userStore.web3Provider.eth.getBlockNumber();
+            }, 1000); 
+            this.intervalId = interval
+
+            watch (() => this.newBlock, (newBlock) => {
+                console.log(`new block [${newBlock}]`);
+                this.userStore.update()
+            })
+            
+        },
+
+
         async watchAccountChanged(){
             
             window.ethereum.on('accountsChanged', async(accounts) => {
@@ -217,10 +249,8 @@
                     this.userStore.setStatus(STATUS_DISCONNECTED)
                     console.log('Disconnection now.');
                 } else {
-                    const currentChainId = Web3.utils.toHex(await this.userStore.web3Provider.eth.getChainId())
                     console.log('Switched account:', accounts[0]);
                     this.userStore.setAddress(accounts[0])
-                    this.userStore.setChainId(currentChainId)
                     this.userStore.setStatus(STATUS_LOGGED_IN)
                     this.userStore.update()
                 }
@@ -235,11 +265,13 @@
 
                     case PROVIDER_CONFIG.ethChainId:
                         this.userStore.setChainId(chainId)
+                        this.userStore.setScanUrl(PROVIDER_CONFIG.ethScanUrl)
                         console.log('Chain changed to:', chainId);
                         break
 
                     case PROVIDER_CONFIG.bnbChainID:
                         this.userStore.setChainId(chainId)
+                        this.userStore.setScanUrl(PROVIDER_CONFIG.bnbScanUrl)
                         console.log('Chain changed to:', chainId);
                         break
 
@@ -264,6 +296,16 @@
                                     console.error(err);
                                 });
                             break;
+
+                        case BNB:
+                            await metamaskSwitchNetwork(PROVIDER_CONFIG.bnbChainId, PROVIDER_CONFIG.bnbRpcUrl)
+                                .then(() => {
+                                    this.userStore.setChainId(PROVIDER_CONFIG.bnbChainId)
+                                })
+                                .catch((err) => {
+                                    console.error(err);
+                                });
+                            break;
                     }
 
                     break;
@@ -277,11 +319,14 @@
 
         async watchLoginStatus() {
 
-            watch(() => this.userStore.status, (newLoginStatus) => {
+            watch(() => this.userStore.status, newLoginStatus => {
 
                 switch (newLoginStatus) {
                     case STATUS_LOGGED_IN:
                         this.afterLogin();
+                        this.uninstallInteravl()
+                        this.watchBlock();
+                        
                         break;
 
                     default:
@@ -294,15 +339,11 @@
             return filterAddress(this.userStore.address); // 或者是任何默认值
         },
 
-        userBalance() {
-            return filterDecimal(this.userStore.balance); // 或者是任何默认值
-        },
-
-
         afterLogin() {
-            const closeButton = document.querySelector('.modal-header .btn-close');
-            closeButton.click()
             
+            
+            this.hideConnectModal()
+
             this.isOpen = false
             this.showLoader = false;
             this.initializationText = '';
@@ -310,7 +351,7 @@
             this.showConnectSignIn = false;
             this.showNewListItem = true;
             console.log('Successfully connected to the website');
-            
+
         },
 
         async isConnention() {
@@ -318,25 +359,25 @@
                 
             switch (this.userStore.connector){
                 case METAMASK:
-                    this.userStore.setWeb3Provider(new Web3(window.ethereum));
                     const provider = this.userStore.web3Provider
                     const currentChainId = Web3.utils.toHex(await provider.eth.getChainId())
                     try {
                         const accounts = await provider.eth.getAccounts();
                         if (accounts.length > 0) {
                             this.userStore.setAddress(accounts[0])
-                            this.userStore.setChainId(currentChainId)
-                            console.log('Connected account:', accounts[0]);
                             this.userStore.setStatus(STATUS_LOGGED_IN)
-
+                            console.log('Connected account:', accounts[0]);
+                            
                             switch (currentChainId) {
                                 case PROVIDER_CONFIG.ethChainId:
                                     this.userStore.setChainId(currentChainId)
+                                    this.userStore.setScanUrl(PROVIDER_CONFIG.ethScanUrl)
                                     console.log('Connected chain:', currentChainId);
                                     break
 
                                 case PROVIDER_CONFIG.bnbChainID:
                                     this.userStore.setChainId(currentChainId)
+                                    this.userStore.setScanUrl(PROVIDER_CONFIG.bnbScanUrl)
                                     console.log('Connected chain:', currentChainId);
                                     break
 
@@ -398,12 +439,13 @@
         
 
         async getBalance() {
+            
             watch([() => this.userStore.status, () => this.userStore.timestamp], async ([newStatus], [newUpdate]) => {
                 console.log("getBalance", newStatus)
                 switch (newStatus) {
                     case STATUS_LOGGED_IN:
                         const balance = await this._getBalance();
-                        this.userStore.setBalance(balance)
+                        this.userStore.setBalance(filterDecimal(balance, 8))
                         break
             }
             }, {immediate: true});
@@ -413,6 +455,12 @@
             const provider = this.userStore.web3Provider
             const balance = await provider.utils.fromWei(await provider.eth.getBalance(this.userStore.address), 'ether');
             return balance
+        },
+
+        uninstallInteravl() {
+            if (this.intervalId) {
+                clearInterval(this.intervalId); // 清除定时器
+            }
         },
         
         toggleNavbar() {
@@ -432,6 +480,9 @@
 
   
     },
+    beforeUnmount() {
+        this.uninstallInteravl()
+    }
   };
   </script>
   <style lang="scss" scoped>

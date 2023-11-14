@@ -3,14 +3,15 @@ import { STATUS_NOT_LOGGED_IN, ETHEREUM} from '@/assets/js/constant.js'
 
 export const useUserStore = defineStore('user', {
     state: () => ({ 
-      connector: null,
-      status: STATUS_NOT_LOGGED_IN,
-      chainId: null,
-      address: "0x000000000000000000000000",
-      balance: "0",
-      currency: "ETH",
-      web3Provider: null,
-      timestamp: Date.now(),
+        connector: null,
+        status: STATUS_NOT_LOGGED_IN,
+        chainId: null,
+        scanUrl: null,
+        address: "0x000000000000000000000000",
+        balance: "0",
+        currency: "ETH",
+        web3Provider: null,
+        timestamp: Date.now(),
     }),
     actions: {
       setConnector(option) {
@@ -21,6 +22,9 @@ export const useUserStore = defineStore('user', {
       },
       setChainId(option) {
         this.chainId = option;
+      },
+      setScanUrl(option) {
+        this.scanUrl = option;
       },
       setAddress(option) {
         this.address = option;
@@ -53,4 +57,45 @@ export const useAlertStore = defineStore('alert', {
 
     }
   }
+});
+
+export const useTransactionModalStore = defineStore('transactionModal', {
+    state: () => ({
+        isTransactionPending: false,
+        isTransactionConfirmed: false,
+        isTransactionFailed: false,
+        txid: '',
+        scanUrl: ''
+    }),
+
+    actions: {
+        // 显示"进行中"的模态框
+        showPendingModal() {
+            this.isTransactionPending = true;
+            this.isTransactionConfirmed = false;
+            this.isTransactionFailed = false;
+        },
+        // 显示"已确认"的模态框
+        showConfirmedModal(scanUrl, txid) {
+            this.isTransactionPending = false;
+            this.isTransactionConfirmed = true;
+            this.isTransactionFailed = false;
+            this.scanUrl = scanUrl;
+            this.txid = txid;
+        },
+        // 显示"失败"的模态框
+        showFailedModal(scanUrl, txid) {
+            this.isTransactionPending = false;
+            this.isTransactionConfirmed = false;
+            this.isTransactionFailed = true;
+            this.scanUrl = scanUrl;
+            this.txid = txid;
+        },
+        // 关闭所有模态框
+        closeAllModals() {
+            this.isTransactionPending = false;
+            this.isTransactionConfirmed = false;
+            this.isTransactionFailed = false;
+        }
+    }
 });

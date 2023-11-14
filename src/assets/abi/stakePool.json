@@ -25,6 +25,11 @@
                 "internalType": "address",
                 "name": "_feeReceiver",
                 "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "gasLimit",
+                "type": "uint256"
             }
         ],
         "stateMutability": "nonpayable",
@@ -189,6 +194,25 @@
         "inputs": [
             {
                 "indexed": false,
+                "internalType": "uint256",
+                "name": "minStake",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "minUnstake",
+                "type": "uint256"
+            }
+        ],
+        "name": "MinStakeAndUnstakeUpdate",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
                 "internalType": "address",
                 "name": "prevOperator",
                 "type": "address"
@@ -341,6 +365,32 @@
         ],
         "name": "Unstaked",
         "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "MIN_STAKE",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "MIN_UNSTAKE",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     },
     {
         "inputs": [],
@@ -500,6 +550,19 @@
                 "internalType": "address",
                 "name": "",
                 "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getAvailableWithdrawalAmount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -793,6 +856,42 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "stakeinfoOfEpoch",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "totalReward",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "tatalStakedPE",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "totalWeightTE",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "start",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "totalStaked",
         "outputs": [
@@ -891,6 +990,24 @@
     {
         "inputs": [
             {
+                "internalType": "uint256",
+                "name": "minStake",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "minUnstake",
+                "type": "uint256"
+            }
+        ],
+        "name": "updateMinStakeAndUnstake",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "address",
                 "name": "",
                 "type": "address"
@@ -912,6 +1029,19 @@
                 "internalType": "uint256",
                 "name": "lastStakeEpoch",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "vault",
+        "outputs": [
+            {
+                "internalType": "contract Vault",
+                "name": "",
+                "type": "address"
             }
         ],
         "stateMutability": "view",

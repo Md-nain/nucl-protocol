@@ -9,7 +9,7 @@
                   <a href="javascript:void(0);" class="btn medium-btn mt-1" data-bs-toggle="modal" data-bs-target="#authorization-modal">EIP 2612 Authorization</a>
                 </div>
                 <div class="col-sm-3">
-                  <a href="javascript:void(0);" class="btn medium-btn mt-1" data-bs-toggle="modal" data-bs-target="#transactionProcessing-modal">Transaction Pending</a>
+                  <a href="javascript:void(0);" class="btn medium-btn mt-1" @click="openModal()">Transaction Pending</a>
                 </div>
                 <div class="col-sm-3">
                   <a href="javascript:void(0);" class="btn medium-btn mt-1" data-bs-toggle="modal" data-bs-target="#transactionConfirmed-modal">Transaction Confirmed</a>
@@ -213,8 +213,32 @@
 
 <script>
 import Header from '@/components/Header.vue';
+import { Modal } from 'bootstrap';
 
 export default {
+  setup() {
+    const modalElement = document.getElementById('transactionProcessing-modal');
+      // 创建 Modal 实例
+    const modal = new Modal(modalElement);
+    function openModal() {
+      // 获取模态框元素
+      
+      // 显示模态框
+      modal.show();
+    }
+    function hideModal() {
+      // 获取模态框元素
+      
+      // 显示模态框
+      modal.hide();
+    }
+
+    return {
+      openModal,
+      hideModal
+    };
+  },
+
   components: {
     Header,
   },
